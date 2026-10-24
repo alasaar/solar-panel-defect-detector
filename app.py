@@ -80,12 +80,14 @@ def load_all_artifacts():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     resnet = models.resnet50(weights=None)
-    resnet.fc = nn.Linear(resnet.fc.in_features, num_classes)
+    num_ftrs = resnet.fc.in_features
+    resnet.fc = nn.Sequential(nn.Dropout(0.3), nn.Linear(num_ftrs, num_classes))
     resnet.load_state_dict(torch.load("resnet50_fine_tuned.pth", map_location=device))
     resnet.to(device).eval()
     
     effnet = models.efficientnet_b0(weights=None)
-    effnet.classifier[1] = nn.Linear(effnet.classifier[1].in_features, num_classes)
+    num_ftrs_eff = effnet.classifier[1].in_features
+    effnet.classifier = nn.Sequential(nn.Dropout(0.3), nn.Linear(num_ftrs_eff, num_classes))
     effnet.load_state_dict(torch.load("efficientnet_b0_fine_tuned.pth", map_location=device))
     effnet.to(device).eval()
     
